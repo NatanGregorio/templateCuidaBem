@@ -11,7 +11,14 @@
     {% if users and users|length > 0 %}
       <ul style="list-style:none; padding:0; margin:0;">
         {% for u in users %}
-          <li class="card" style="padding:.6rem .75rem; margin:.5rem 0;">{{ u['name'] }}</li>
+          <li class="card" style="padding:.6rem .75rem; margin:.5rem 0; display:flex; align-items:center; justify-content:space-between; gap:.5rem;">
+            <span>{{ u['name'] }}</span>
+            <form method="post" action="{{ url_for('usuarios') }}" onsubmit="return confirm('Tem certeza que deseja excluir este usuário? Esta ação é irreversível.');" style="margin:0;">
+              <input type="hidden" name="action" value="delete" />
+              <input type="hidden" name="user_id" value="{{ u['id'] }}" />
+              <button type="submit" class="btn danger">Excluir</button>
+            </form>
+          </li>
         {% endfor %}
       </ul>
     {% else %}

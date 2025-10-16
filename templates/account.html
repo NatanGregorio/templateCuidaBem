@@ -13,6 +13,10 @@
         <input type="email" id="email" name="email" required placeholder="seu@email" value="{{ email or user['email'] }}">
       </div>
       <div class="form-group">
+        <label for="phone">Telefone</label>
+        <input type="tel" id="phone" name="phone" required inputmode="tel" pattern="^\(\d{2}\)\s\d{4,5}-\d{4}$" title="Formato: (DD) 99999-9999" maxlength="15" placeholder="Ex: (11) 99999-0000" value="{{ phone or user['phone'] or '' }}">
+      </div>
+      <div class="form-group">
         <label for="username">Login</label>
         <input type="text" id="username" name="username" required placeholder="Seu login" value="{{ username or user['username'] }}">
       </div>
@@ -37,16 +41,12 @@
         </select>
       </div>
       <div class="form-group">
-        <label for="phone">Telefone</label>
-        <input type="tel" id="phone" name="phone" inputmode="tel" pattern="^\(\d{2}\)\s\d{4,5}-\d{4}$" title="Formato: (DD) 99999-9999" maxlength="15" placeholder="Ex: (11) 99999-0000" value="{{ phone or user['phone'] or '' }}">
-      </div>
-      <div class="form-group">
         <label for="emergency_contact_name">Nome do responsável</label>
-        <input type="text" id="emergency_contact_name" name="emergency_contact_name" placeholder="Nome do responsável" value="{{ emergency_contact_name or user['emergency_contact_name'] or '' }}">
+        <input type="text" id="emergency_contact_name" name="emergency_contact_name" placeholder="Nome do responsável (opcional)" value="{{ emergency_contact_name or user['emergency_contact_name'] or '' }}">
       </div>
       <div class="form-group">
         <label for="emergency_contact_phone">Telefone do responsável</label>
-        <input type="tel" id="emergency_contact_phone" name="emergency_contact_phone" inputmode="tel" pattern="^\(\d{2}\)\s\d{4,5}-\d{4}$" title="Formato: (DD) 99999-9999" maxlength="15" placeholder="Ex: (11) 99999-0000" value="{{ emergency_contact_phone or user['emergency_contact_phone'] or '' }}">
+        <input type="tel" id="emergency_contact_phone" name="emergency_contact_phone" inputmode="tel" pattern="^\(\d{2}\)\s\d{4,5}-\d{4}$" title="Formato: (DD) 99999-9999" maxlength="15" placeholder="Ex: (11) 99999-0000 (opcional)" value="{{ emergency_contact_phone or user['emergency_contact_phone'] or '' }}">
       </div>
       <div class="form-group">
         <label for="emergency_contact_relation">Relação com o responsável</label>

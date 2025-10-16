@@ -53,12 +53,16 @@ nav a:hover { color: var(--accent); }
 .form-group textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.18); }
 
 .btn { padding: .6rem 1rem; border-radius: 8px; border: none; cursor: pointer; background: #2d799c; color: #ffffff; text-decoration: none; display: inline-block; }
-.btn.primary { background: #2d799c; color: #ffffff; font-weight: 600; }
+.btn.primary { background: var(--accent); color: #ffffff; font-weight: 600; }
+.btn.primary:focus { outline: none; box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.28); }
 .btn:hover, .btn.primary:hover { filter: brightness(1.05); }
+/* Botão de ação perigosa */
+.btn.danger { background: var(--error); color: #ffffff; }
+.btn.danger:hover { filter: brightness(1.05); }
 
-/* Select (combo box) with same style as buttons */
+/* Select (combo box) styled as blue buttons, lighter tone */
 select {
-  background: #2d799c;
+  background: #4aa1c2; /* lighter blue tone */
   color: #ffffff;
   border: none;
   border-radius: 8px;
@@ -66,7 +70,7 @@ select {
   cursor: pointer;
 }
 select:hover { filter: brightness(1.05); }
-select:focus { outline: none; box-shadow: 0 0 0 3px rgba(45, 121, 156, 0.28); }
+select:focus { outline: none; box-shadow: 0 0 0 3px rgba(74, 161, 194, 0.28); }
 /* Improve dropdown readability (may vary by browser) */
 select option { color: #1e3a8a; background: #ffffff; }
 

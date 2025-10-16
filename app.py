@@ -64,6 +64,10 @@ MEASUREMENT_CONTEXTS = [
 MEASUREMENT_CONTEXT_LABELS = dict(MEASUREMENT_CONTEXTS)
 
 
+def digits_only(s):
+    return "".join(ch for ch in (s or "") if ch.isdigit())
+
+
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -318,14 +322,14 @@ def register():
             return "".join(ch for ch in (s or "") if ch.isdigit())
         phone = digits_only(phone_raw)
         emergency_contact_phone = digits_only(emergency_contact_phone_raw)
+        # Telefone principal permanece obrigatório
         if not phone or len(phone) not in (10, 11):
             errors.append("Telefone inválido. Informe DDD + número (10 ou 11 dígitos).")
-        if not emergency_contact_name:
-            errors.append("Nome do responsável é obrigatório.")
-        if not emergency_contact_phone or len(emergency_contact_phone) not in (10, 11):
+        # Dados do responsável são opcionais: valide apenas se informados
+        if emergency_contact_phone_raw and len(emergency_contact_phone) not in (10, 11):
             errors.append("Telefone do responsável inválido. Informe DDD + número (10 ou 11 dígitos).")
         allowed_rel = {slug for slug, _ in EMERGENCY_RELATIONS}
-        if not emergency_contact_relation or emergency_contact_relation not in allowed_rel:
+        if emergency_contact_relation and emergency_contact_relation not in allowed_rel:
             errors.append("Relação de emergência inválida.")
 
         def parse_float(s):
@@ -511,7 +515,7 @@ def logout():
     return redirect(url_for("index"))
 
 
-@app.route("/usuarios")
+@app.route("/usuarios", methods=["GET", "POST"])
 def usuarios():
     # Apenas administrador pode acessar
     if not session.get("is_admin"):
@@ -519,6 +523,21 @@ def usuarios():
         return redirect(url_for("index"))
 
     conn = get_db_connection()
+    if request.method == "POST":
+        action = request.form.get("action")
+        user_id = request.form.get("user_id")
+        if action == "delete" and user_id:
+            row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+            if not row:
+                conn.close()
+                flash("Usuário não encontrado.", "error")
+                return redirect(url_for("usuarios"))
+            conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+            conn.commit()
+            conn.close()
+            flash("Usuário excluído com sucesso.", "success")
+            return redirect(url_for("usuarios"))
+
     users = conn.execute(
         "SELECT * FROM users ORDER BY created_at DESC"
     ).fetchall()
@@ -563,6 +582,10 @@ def account():
         new_password = request.form.get("new_password", "")
         confirm_password = request.form.get("confirm_password", "")
 
+        # Normalização dos telefones para apenas dígitos
+        phone = digits_only(phone_raw)
+        emergency_contact_phone = digits_only(emergency_contact_phone_raw)
+
         errors = []
         if not name or not email or not username:
             errors.append("Nome, e-mail e login são obrigatórios.")
@@ -579,6 +602,12 @@ def account():
         allowed_rel = {slug for slug, _ in EMERGENCY_RELATIONS}
         if emergency_contact_relation and emergency_contact_relation not in allowed_rel:
             errors.append("Relação de emergência inválida.")
+
+        # Validação dos telefones (opcionais na edição: validar se informados)
+        if phone and len(phone) not in (10, 11):
+            errors.append("Telefone inválido. Informe DDD + número (10 ou 11 dígitos).")
+        if emergency_contact_phone and len(emergency_contact_phone) not in (10, 11):
+            errors.append("Telefone do responsável inválido. Informe DDD + número (10 ou 11 dígitos).")
 
         def parse_float(s):
             if not s:
