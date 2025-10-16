@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Registrar medição de glicemia</h2>
+    <form method="post" action="{{ url_for('measurements') }}">
+      <div class="form-group">
+        <label for="date">Data</label>
+        <input type="date" id="date" name="date" required value="{{ date_prev or date_default }}">
+      </div>
+      <div class="form-group">
+        <label for="time">Hora</label>
+        <input type="time" id="time" name="time" required value="{{ time_prev or time_default }}">
+      </div>
+      <div class="form-group">
+        <label for="level">Nível (mg/dL)</label>
+        <input type="number" id="level" name="level" required step="0.1" min="20" max="600" placeholder="Ex: 105" value="{{ level_prev or '' }}">
+      </div>
+      <div class="form-group">
+        <label for="measurement_context">Momento da medição</label>
+        <select id="measurement_context" name="measurement_context" required>
+          <option value="" disabled {% if not context_prev %}selected{% endif %}>Selecione</option>
+          {% for slug, label in measurement_contexts %}
+            <option value="{{ slug }}" {% if context_prev == slug %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="notes">Observações (opcional)</label>
+        <textarea id="notes" name="notes" rows="3" placeholder="Detalhes, sintomas, alimentação etc.">{{ notes_prev or '' }}</textarea>
+      </div>
+      <button type="submit" class="btn primary">Registrar</button>
+    </form>
+  </section>
+
+  <section class="card" style="margin-top:1rem;">
+    <h2>Últimas medições</h2>
+    {% if entries and entries|length > 0 %}
+      <table style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:.5rem; border-bottom:1px solid #1f2937;">Data/Hora</th>
+            <th style="text-align:left; padding:.5rem; border-bottom:1px solid #1f2937;">Nível (mg/dL)</th>
+            <th style="text-align:left; padding:.5rem; border-bottom:1px solid #1f2937;">Momento</th>
+            <th style="text-align:left; padding:.5rem; border-bottom:1px solid #1f2937;">Observações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in entries %}
+            <tr>
+              <td style="padding:.5rem; border-bottom:1px solid #1f2937;">{{ e['measured_at'] }}</td>
+              <td style="padding:.5rem; border-bottom:1px solid #1f2937;">{{ '%.1f'|format(e['glucose_level']) }}</td>
+              <td style="padding:.5rem; border-bottom:1px solid #1f2937;">
+                {% set ctx = e['measurement_context'] %}
+                {% if ctx == 'em_jejum' %}Em Jejum{% elif ctx == 'antes_refeicao' %}Antes da Refeição{% elif ctx == '2h_pos_refeicao' %}2h após a refeição{% elif ctx == 'antes_dormir' %}Antes de dormir{% else %}-{% endif %}
+              </td>
+              <td style="padding:.5rem; border-bottom:1px solid #1f2937;">{{ e['notes'] or '-' }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">Nenhuma medição registrada ainda.</p>
+    {% endif %}
+  </section>
+{% endblock %}

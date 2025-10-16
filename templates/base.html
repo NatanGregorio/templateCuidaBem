@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>CuidaBem - Controle de Diabetes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1e3a8a">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-wrap">
+      <h1 class="brand"><a href="{{ url_for('features') }}">CuidaBem</a></h1>
+      <nav>
+        {% if session.get('user_id') %}
+          <a href="{{ url_for('features') }}">Voltar</a>
+          <a href="{{ url_for('logout') }}">Sair</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flash-list">
+          {% for category, message in messages %}
+            <li class="flash {{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>&copy; 2025 CuidaBem</small>
+    </div>
+  </footer>
+  <!-- Modal de alerta (bloqueante até clicar em OK) -->
+  <div id="alert-modal-overlay" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content" role="document">
+      <h3 id="alert-modal-title">Lembrete</h3>
+      <p id="alert-modal-body" class="muted"></p>
+      <div class="modal-actions">
+        <button id="alert-modal-ok" class="btn primary">OK</button>
+      </div>
+    </div>
+  </div>
+  {% if session.get('user_id') %}
+  <script>
+    (function(){
+      // Notificações web (não bloqueantes) se suportadas
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().catch(function(){});
+      }
+      var cache = null;
+      var lastFetch = 0;
+      var NOTIFY_PREFIX = 'alerts_notified_';
+      function markNotified(key){ try { localStorage.setItem(NOTIFY_PREFIX + key, '1'); } catch(e){} }
+      function wasNotified(key){ try { return localStorage.getItem(NOTIFY_PREFIX + key) === '1'; } catch(e){ return false; } }
+      // Áudio: preparar AudioContext e função de beep
+      var AC = null;
+      function ensureAudio(){
+        try {
+          if (!AC && (window.AudioContext || window.webkitAudioContext)) {
+            AC = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          if (AC && AC.state === 'suspended') { AC.resume(); }
+        } catch(e){}
+      }
+      ['pointerdown','keydown','touchstart'].forEach(function(ev){
+        document.addEventListener(ev, ensureAudio, { passive: true });
+      });
+      function playBeep(count, durationMs, gapMs, freq){
+        ensureAudio();
+        if (!AC) { return; }
+        var time = AC.currentTime;
+        for (var i=0; i<(count||1); i++) {
+          var osc = AC.createOscillator();
+          var gain = AC.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq || 1100;
+          gain.gain.setValueAtTime(0, time);
+          gain.gain.linearRampToValueAtTime(0.08, time + 0.02);
+          gain.gain.linearRampToValueAtTime(0.0, time + (durationMs||250)/1000);
+          osc.connect(gain);
+          gain.connect(AC.destination);
+          osc.start(time);
+          osc.stop(time + (durationMs||250)/1000);
+          time += ((durationMs||250) + (gapMs||150)) / 1000;
+        }
+      }
+      // Modal elements
+      var overlay = document.getElementById('alert-modal-overlay');
+      var titleEl = document.getElementById('alert-modal-title');
+      var bodyEl = document.getElementById('alert-modal-body');
+      var okBtn = document.getElementById('alert-modal-ok');
+      var escHandler = null;
+      function showAlertModal(typeLabel, timeLabel){
+        try {
+          titleEl.textContent = 'Lembrete: ' + (typeLabel || 'Alerta');
+          bodyEl.textContent = 'Hoje às ' + (timeLabel || '');
+          overlay.classList.add('show');
+          overlay.setAttribute('aria-hidden','false');
+          escHandler = function(e){ if (e.key === 'Escape') { e.preventDefault(); } };
+          document.addEventListener('keydown', escHandler, true);
+          // Som de alerta e vibração (quando suportado)
+          playBeep(3, 220, 140, 1200);
+          if (navigator && typeof navigator.vibrate === 'function') {
+            try { navigator.vibrate([200, 100, 200]); } catch(e){}
+          }
+        } catch(e){}
+      }
+      function hideAlertModal(){
+        try {
+          overlay.classList.remove('show');
+          overlay.setAttribute('aria-hidden','true');
+          if (escHandler) { document.removeEventListener('keydown', escHandler, true); escHandler = null; }
+        } catch(e){}
+      }
+      okBtn && (okBtn.onclick = function(){ hideAlertModal(); });
+      // Permitir clique no botão OK; bloquear apenas cliques no fundo
+      overlay && overlay.addEventListener('click', function(e){
+        if (e.target === overlay) { e.stopPropagation(); e.preventDefault(); }
+      }, false);
+      async function fetchAlerts(){
+        var now = Date.now();
+        if (now - lastFetch < 4*60*1000) { return; }
+        lastFetch = now;
+        try {
+          var res = await fetch('{{ url_for("alerts_data") }}');
+          if (!res.ok) { return; }
+          var json = await res.json();
+          cache = json.alerts || [];
+        } catch(e){}
+      }
+      function dowSlug(d){ return ['sun','mon','tue','wed','thu','fri','sat'][d.getDay()]; }
+      function check(){
+        if (!Array.isArray(cache)) { return; }
+        var now = new Date();
+        var nowMin = now.getHours()*60 + now.getMinutes();
+        var todaySlug = dowSlug(now);
+        var todayDate = now.toISOString().slice(0,10); // YYYY-MM-DD
+        cache.forEach(function(a){
+          var hhmm = (a.alert_time || '').split(':');
+          if (hhmm.length < 2) { return; }
+          var target = parseInt(hhmm[0],10)*60 + parseInt(hhmm[1],10);
+          var diff = target - nowMin;
+          if (diff < 0 || diff > 10) { return; }
+          var shouldToday = false;
+          if (a.alert_date) {
+            shouldToday = (a.alert_date === todayDate);
+          } else if (Array.isArray(a.days) && a.days.length > 0) {
+            shouldToday = a.days.indexOf(todaySlug) >= 0;
+          }
+          if (!shouldToday) { return; }
+          var key = a.id + '_' + todayDate + '_' + (a.alert_date ? 'date' : 'days') + '_' + a.alert_time;
+          if (wasNotified(key)) { return; }
+          // Mostrar modal bloqueante com tipo de alerta
+          showAlertModal(a.alert_type_label || 'Alerta', a.alert_time);
+          markNotified(key);
+          // Além do modal, tentar notificação nativa se permitida
+          try {
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('Lembrete: ' + (a.alert_type_label || 'Alerta'), { body: 'Hoje às ' + a.alert_time });
+            }
+          } catch(e){}
+        });
+      }
+      fetchAlerts();
+      setInterval(fetchAlerts, 5*60*1000);
+      setInterval(check, 60*1000);
+    })();
+  </script>
+  {% endif %}
+  <script>
+    // Registro do Service Worker para PWA (funciona em localhost/HTTPS)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function(){
+        navigator.serviceWorker.register('{{ url_for('static', filename='service-worker.js') }}')
+          .catch(function(e){ console.warn('SW register failed', e); });
+      });
+    }
+  </script>
+</body>
+</html>

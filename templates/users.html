@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Usuários cadastrados</h2>
+    <p class="muted">Listagem apenas de nomes dos usuários.</p>
+    <a class="btn primary" href="{{ url_for('index') }}">Voltar</a>
+  </section>
+
+  <section class="card" style="margin-top:1rem;">
+    {% if users and users|length > 0 %}
+      <ul style="list-style:none; padding:0; margin:0;">
+        {% for u in users %}
+          <li class="card" style="padding:.6rem .75rem; margin:.5rem 0;">{{ u['name'] }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">Nenhum usuário cadastrado.</p>
+    {% endif %}
+  </section>
+{% endblock %}

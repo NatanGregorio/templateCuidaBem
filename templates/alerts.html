@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Alertas</h2>
+    <p class="muted">Crie lembretes por dias da semana e horário.</p>
+    <form method="post" action="{{ url_for('alerts') }}">
+      <input type="hidden" name="action" value="create">
+      <div class="form-group">
+        <label for="alert_type">Tipo de alerta</label>
+        <select id="alert_type" name="alert_type" required>
+          {% for slug, label in alert_types %}
+            <option value="{{ slug }}" {% if alert_type_prev == slug %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="alert_time">Horário</label>
+        <input type="time" id="alert_time" name="alert_time" required value="{{ alert_time_prev or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Dias da semana (ou escolha uma data específica abaixo)</label>
+        <div style="display:flex; flex-wrap:wrap; gap:.5rem;">
+          {% for dslug, dlabel in days_of_week %}
+            <label style="display:flex; align-items:center; gap:.25rem;">
+              <input type="checkbox" name="days" value="{{ dslug }}" {% if days_prev and (dslug in days_prev) %}checked{% endif %}>
+              <span>{{ dlabel }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="alert_date">Data específica (opcional)</label>
+        <input type="date" id="alert_date" name="alert_date" value="{{ alert_date_prev or '' }}">
+        <p class="muted">Selecione dias da semana OU informe uma data específica.</p>
+      </div>
+      <button type="submit" class="btn primary">Adicionar alerta</button>
+    </form>
+  </section>
+
+  <section class="card" style="margin-top:1rem;">
+    <h2>Meus alertas</h2>
+    {% if alerts and alerts|length > 0 %}
+      <table style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:.5rem; border-bottom:1px solid #1f2937;">Tipo</th>
+            <th style="text-align:left; padding:.5rem; border-bottom:1px solid #1f2937;">Horário</th>
+            <th style="text-align:left; padding:.5rem; border-bottom:1px solid #1f2937;">Dias</th>
+            <th style="text-align:left; padding:.5rem; border-bottom:1px solid #1f2937;">Data</th>
+            <th style="text-align:left; padding:.5rem; border-bottom:1px solid #1f2937;">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in alerts %}
+            {% if edit_alert and edit_alert['id'] == a['id'] %}
+              <tr>
+                <form method="post" action="{{ url_for('alerts') }}">
+                  <input type="hidden" name="action" value="update">
+                  <input type="hidden" name="alert_id" value="{{ a['id'] }}">
+                  <td style="padding:.5rem; border-bottom:1px solid #1f2937;">
+                    <select name="alert_type" required>
+                      {% for slug, label in alert_types %}
+                        <option value="{{ slug }}" {% if edit_alert['alert_type'] == slug %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </td>
+                  <td style="padding:.5rem; border-bottom:1px solid #1f2937;">
+                    <input type="time" name="alert_time" required value="{{ edit_alert['alert_time'] }}">
+                  </td>
+                <td style="padding:.5rem; border-bottom:1px solid #1f2937;">
+                  <div style="display:flex; flex-wrap:wrap; gap:.25rem;">
+                    {% for dslug, dlabel in days_of_week %}
+                      <label style="display:flex; align-items:center; gap:.25rem;">
+                        <input type="checkbox" name="days" value="{{ dslug }}" {% if dslug in edit_days %}checked{% endif %}>
+                        <span>{{ dlabel }}</span>
+                      </label>
+                    {% endfor %}
+                  </div>
+                </td>
+                <td style="padding:.5rem; border-bottom:1px solid #1f2937;">
+                  <input type="date" name="alert_date" value="{{ edit_date or '' }}">
+                  <div class="muted" style="font-size:.85em;">Use dias OU data.</div>
+                </td>
+                <td style="padding:.5rem; border-bottom:1px solid #1f2937;">
+                  <button type="submit" class="btn primary">Salvar</button>
+                  <a class="btn" href="{{ url_for('alerts') }}" style="margin-left:.5rem;">Cancelar</a>
+                </td>
+                </form>
+              </tr>
+            {% else %}
+              <tr>
+                <td style="padding:.5rem; border-bottom:1px solid #1f2937;">{{ alert_type_labels.get(a['alert_type'], a['alert_type']) }}</td>
+                <td style="padding:.5rem; border-bottom:1px solid #1f2937;">{{ a['alert_time'] }}</td>
+                <td style="padding:.5rem; border-bottom:1px solid #1f2937;">
+                  {% set ds = (a['days'] or '') %}
+                  {% set slugs = ds.split(',') if ds else [] %}
+                  {% for s in slugs %}
+                    {{ day_labels.get(s, s) }}{% if not loop.last %}, {% endif %}
+                  {% endfor %}
+                </td>
+                <td style="padding:.5rem; border-bottom:1px solid #1f2937;">{{ a['alert_date'] or '-' }}</td>
+                <td style="padding:.5rem; border-bottom:1px solid #1f2937;">
+                  <a class="btn" href="{{ url_for('alerts', edit=a['id']) }}">Editar</a>
+                  <form method="post" action="{{ url_for('delete_alert', alert_id=a['id']) }}" style="display:inline; margin-left:.5rem;">
+                    <button type="submit" class="btn danger" onclick="return confirm('Excluir este alerta?');">Excluir</button>
+                  </form>
+                </td>
+              </tr>
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">Nenhum alerta configurado ainda.</p>
+    {% endif %}
+  </section>
+{% endblock %}

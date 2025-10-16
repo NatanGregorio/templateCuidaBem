@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Funcionalidades{% if name %}, {{ name }}{% endif %}</h2>
+    <p class="muted">Acesse rapidamente todas as áreas do aplicativo.</p>
+  </section>
+
+  {% if is_logged_in %}
+  <section style="display:grid; grid-template-columns: repeat(3, 1fr); gap: .75rem;">
+    <div class="card">
+      <h3>Perfil</h3>
+      <p class="muted">Edite seus dados do cadastro.</p>
+      <a class="btn primary" href="{{ url_for('account') }}">Abrir</a>
+    </div>
+    <div class="card">
+      <h3>Medições</h3>
+      <p class="muted">Registre suas medições de glicemia.</p>
+      <a class="btn primary" href="{{ url_for('measurements') }}">Abrir</a>
+    </div>
+    <div class="card">
+      <h3>Histórico</h3>
+      <p class="muted">Resumo e gráfico das suas medições.</p>
+      <a class="btn primary" href="{{ url_for('dashboard') }}">Abrir</a>
+    </div>
+    <div class="card">
+      <h3>Atividades</h3>
+      <p class="muted">Registro de atividades físicas.</p>
+      <a class="btn primary" href="{{ url_for('activities') }}">Abrir</a>
+    </div>
+    <div class="card">
+      <h3>Dashboard</h3>
+      <p class="muted">Análises e gráficos das suas atividades.</p>
+      <a class="btn primary" href="{{ url_for('activities_dashboard') }}">Abrir</a>
+    </div>
+    <div class="card">
+      <h3>Alertas</h3>
+      <p class="muted">Configure lembretes de medicação, refeições e mais.</p>
+      <a class="btn primary" href="{{ url_for('alerts') }}">Abrir</a>
+    </div>
+  </section>
+  {% else %}
+  <section style="display:grid; grid-template-columns: repeat(2, 1fr); gap: .75rem;">
+    <div class="card">
+      <h3>Login</h3>
+      <p class="muted">Acesse sua conta para usar o aplicativo.</p>
+      <a class="btn primary" href="{{ url_for('index') }}">Entrar</a>
+    </div>
+    <div class="card">
+      <h3>Cadastro</h3>
+      <p class="muted">Crie sua conta para começar a usar.</p>
+      <a class="btn primary" href="{{ url_for('register') }}">Cadastrar</a>
+    </div>
+  </section>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,18 @@
+{
+  "name": "CuidaBem",
+  "short_name": "CuidaBem",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e3a8a",
+  "description": "Controle de diabetes: medições, atividades, alertas e dashboards.",
+  "icons": [
+    {
+      "src": "/static/logo-cuidaBem.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

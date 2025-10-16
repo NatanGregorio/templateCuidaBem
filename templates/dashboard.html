@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Dashboard{% if name %}, {{ name }}{% endif %}</h2>
+    <p class="muted">Resumo das suas medições de glicemia.</p>
+    <form method="get" action="{{ url_for('dashboard') }}" style="display:flex; gap:.5rem; align-items:center; margin:.5rem 0;">
+      <label for="month" class="muted">Mês fechado:</label>
+      <input type="month" id="month" name="month" value="{{ month_key }}">
+      <button class="btn" type="submit">Filtrar</button>
+    </form>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .75rem;">
+      <div class="card" style="padding:1rem;">
+        <div class="muted">Última medição</div>
+        <div style="font-size:1.5rem;">{% if latest_value is not none %}{{ '%.1f'|format(latest_value) }} mg/dL{% else %}—{% endif %}</div>
+      </div>
+      <div class="card" style="padding:1rem;">
+        <div class="muted">Média (7 dias)</div>
+        <div style="font-size:1.5rem;">{% if avg_7d is not none %}{{ '%.1f'|format(avg_7d) }} mg/dL{% else %}—{% endif %}</div>
+      </div>
+      <div class="card" style="padding:1rem;">
+        <div class="muted">Mín / Máx</div>
+        <div style="font-size:1.5rem;">{% if min_val is not none %}{{ '%.1f'|format(min_val) }} / {{ '%.1f'|format(max_val) }}{% else %}—{% endif %}</div>
+      </div>
+      <div class="card" style="padding:1rem;">
+        <div class="muted">Total de medições</div>
+        <div style="font-size:1.5rem;">{{ count }}</div>
+      </div>
+      <div class="card" style="padding:1rem;">
+        <div class="muted">Média do mês (1–30)</div>
+        <div style="font-size:1.5rem;">{% if month_avg is not none %}{{ '%.1f'|format(month_avg) }} mg/dL{% else %}—{% endif %}</div>
+      </div>
+      <div class="card" style="padding:1rem;">
+        <div class="muted">Mín / Máx (mês)</div>
+        <div style="font-size:1.5rem;">{% if month_min is not none %}{{ '%.1f'|format(month_min) }} / {{ '%.1f'|format(month_max) }}{% else %}—{% endif %}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:1rem;">
+    <h3>Tendência de glicemia</h3>
+    {% if labels and labels|length > 0 %}
+      <canvas id="glucoseChart" height="120"></canvas>
+    {% else %}
+      <p class="muted">Você ainda não registrou medições. <a href="{{ url_for('measurements') }}">Registrar agora</a>.</p>
+    {% endif %}
+  </section>
+
+  <section class="card" style="margin-top:1rem;">
+    <h3>Média diária do mês (1–30)</h3>
+    {% if daily_labels and daily_labels|length > 0 %}
+      <canvas id="dailyAvgChart" height="120"></canvas>
+    {% else %}
+      <p class="muted">Sem dados para o mês selecionado.</p>
+    {% endif %}
+  </section>
+
+  <section class="card" style="margin-top:1rem;">
+    <h3>Média por momento da medição (mês fechado)</h3>
+    {% if context_labels and context_labels|length > 0 %}
+      <canvas id="contextAvgChart" height="120"></canvas>
+    {% else %}
+      <p class="muted">Ainda não há medições com contexto no mês selecionado.</p>
+    {% endif %}
+  </section>
+
+  {% if labels and labels|length > 0 %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const labels = {{ labels|tojson }};
+    const dataValues = {{ values|tojson }};
+    const ctx = document.getElementById('glucoseChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Glicemia (mg/dL)',
+          data: dataValues,
+          borderColor: '#2d799c',
+          backgroundColor: 'rgba(45, 121, 156, 0.25)',
+          tension: 0.25,
+          pointRadius: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: '#e5e7eb' } }
+        },
+        scales: {
+          x: { ticks: { color: '#94a3b8' } },
+          y: { ticks: { color: '#94a3b8' }, beginAtZero: false }
+        }
+      }
+    });
+
+    // Gráfico: média diária no mês fechado
+    const dailyLabels = {{ daily_labels|tojson }};
+    const dailyAvgs = {{ daily_avgs|tojson }};
+    const ctxDailyEl = document.getElementById('dailyAvgChart');
+    if (ctxDailyEl) {
+      new Chart(ctxDailyEl.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: dailyLabels,
+          datasets: [{
+            label: 'Média diária (mg/dL)',
+            data: dailyAvgs,
+            borderColor: '#2d799c',
+            backgroundColor: 'rgba(45, 121, 156, 0.35)'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: '#e5e7eb' } } },
+          scales: {
+            x: { ticks: { color: '#94a3b8' } },
+            y: { ticks: { color: '#94a3b8' }, beginAtZero: false }
+          }
+        }
+      });
+    }
+
+    // Gráfico: média por contexto no mês fechado
+    const contextLabels = {{ context_labels|tojson }};
+    const contextAvgs = {{ context_avgs|tojson }};
+    const ctxContextEl = document.getElementById('contextAvgChart');
+    if (ctxContextEl) {
+      new Chart(ctxContextEl.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: contextLabels,
+          datasets: [{
+            label: 'Média por contexto (mg/dL)',
+            data: contextAvgs,
+            borderColor: '#2d799c',
+            backgroundColor: 'rgba(45, 121, 156, 0.35)'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: '#e5e7eb' } } },
+          scales: {
+            x: { ticks: { color: '#94a3b8' } },
+            y: { ticks: { color: '#94a3b8' }, beginAtZero: false }
+          }
+        }
+      });
+    }
+  </script>
+  {% endif %}
+{% endblock %}

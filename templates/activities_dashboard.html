@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Painel de atividades{% if name %}, {{ name }}{% endif %}</h2>
+    <p class="muted">Análise mensal das suas atividades físicas.</p>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: .75rem;">
+      <div class="card" style="padding:1rem;">
+        <div class="muted">Total de atividades</div>
+        <div style="font-size:1.5rem;">{{ total_activities }}</div>
+      </div>
+      <div class="card" style="padding:1rem;">
+        <div class="muted">Tempo total (min)</div>
+        <div style="font-size:1.5rem;">{{ total_minutes }}</div>
+      </div>
+      <div class="card" style="padding:1rem;">
+        <div class="muted">Categoria mais frequente</div>
+        <div style="font-size:1.5rem;">{{ top_category_label or '—' }}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:1rem;">
+    <h3>Distribuição por categoria ({{ month_key }})</h3>
+    {% if category_labels and category_labels|length > 0 %}
+      <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap: .75rem;">
+        <div>
+          <canvas id="chartCounts" height="140"></canvas>
+        </div>
+        <div>
+          <canvas id="chartDurations" height="140"></canvas>
+        </div>
+      </div>
+    {% else %}
+      <p class="muted">Sem dados para o mês selecionado.</p>
+    {% endif %}
+  </section>
+
+  <section class="card" style="margin-top:1rem;">
+    <h3>Evolução diária de tempo ({{ month_key }})</h3>
+    {% if labels_days and labels_days|length > 0 %}
+      <canvas id="chartDaily" height="120"></canvas>
+    {% else %}
+      <p class="muted">Ainda não há atividades registradas neste mês. <a href="{{ url_for('activities') }}">Registrar agora</a>.</p>
+    {% endif %}
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const categoryLabels = {{ category_labels|tojson }};
+    const countsData = {{ counts_per_category|tojson }};
+    const durationsData = {{ durations_per_category|tojson }};
+    const dailyLabels = {{ labels_days|tojson }};
+    const dailyData = {{ durations_daily|tojson }};
+
+    const mutedColor = '#94a3b8';
+    const accent = '#22d3ee';
+    const accent2 = '#a78bfa';
+
+    function makeBarChart(ctx, labels, data, label, color) {
+      return new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label,
+            data,
+            backgroundColor: color,
+            borderColor: color,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: '#e5e7eb' } } },
+          scales: {
+            x: { ticks: { color: mutedColor } },
+            y: { ticks: { color: mutedColor }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function makeLineChart(ctx, labels, data, label, color) {
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label,
+            data,
+            borderColor: color,
+            backgroundColor: 'rgba(34, 211, 238, 0.2)',
+            tension: 0.25,
+            pointRadius: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: '#e5e7eb' } } },
+          scales: {
+            x: { ticks: { color: mutedColor } },
+            y: { ticks: { color: mutedColor }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    if (categoryLabels && categoryLabels.length) {
+      const ctxCounts = document.getElementById('chartCounts').getContext('2d');
+      makeBarChart(ctxCounts, categoryLabels, countsData, 'Quantidade', accent);
+      const ctxDurations = document.getElementById('chartDurations').getContext('2d');
+      makeBarChart(ctxDurations, categoryLabels, durationsData, 'Tempo total (min)', accent2);
+    }
+    if (dailyLabels && dailyLabels.length) {
+      const ctxDaily = document.getElementById('chartDaily').getContext('2d');
+      makeLineChart(ctxDaily, dailyLabels, dailyData, 'Minutos por dia', accent);
+    }
+  </script>
+{% endblock %}

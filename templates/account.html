@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Editar perfil</h2>
+    <form method="post" action="{{ url_for('account') }}">
+      <div class="form-group">
+        <label for="name">Nome</label>
+        <input type="text" id="name" name="name" required placeholder="Seu nome" value="{{ name or user['name'] }}">
+      </div>
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" required placeholder="seu@email" value="{{ email or user['email'] }}">
+      </div>
+      <div class="form-group">
+        <label for="username">Login</label>
+        <input type="text" id="username" name="username" required placeholder="Seu login" value="{{ username or user['username'] }}">
+      </div>
+
+      <div class="form-group">
+        <label for="height">Altura (cm)</label>
+        <input type="number" id="height" name="height" step="0.1" min="1" placeholder="Ex: 170" value="{{ height or user['height'] or '' }}">
+      </div>
+      <div class="form-group">
+        <label for="weight">Peso (kg)</label>
+        <input type="number" id="weight" name="weight" step="0.1" min="1" placeholder="Ex: 65" value="{{ weight or user['weight'] or '' }}">
+      </div>
+      <div class="form-group">
+        <label for="diabetes_type">Tipo de diabetes</label>
+        <select id="diabetes_type" name="diabetes_type">
+          {% set dt = diabetes_type or user['diabetes_type'] %}
+          <option value="">Selecione...</option>
+          <option value="tipo_1" {% if dt == 'tipo_1' %}selected{% endif %}>Tipo 1</option>
+          <option value="tipo_2" {% if dt == 'tipo_2' %}selected{% endif %}>Tipo 2</option>
+          <option value="pre_diabetes" {% if dt == 'pre_diabetes' %}selected{% endif %}>Pré-diabetes</option>
+          <option value="gestacional" {% if dt == 'gestacional' %}selected{% endif %}>Gestacional</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="phone">Telefone</label>
+        <input type="tel" id="phone" name="phone" placeholder="Ex: (11) 99999-0000" value="{{ phone or user['phone'] or '' }}">
+      </div>
+      <div class="form-group">
+        <label for="emergency_contact_name">Contato de emergência</label>
+        <input type="text" id="emergency_contact_name" name="emergency_contact_name" placeholder="Nome do contato" value="{{ emergency_contact_name or user['emergency_contact_name'] or '' }}">
+      </div>
+      <div class="form-group">
+        <label for="emergency_contact_relation">Relação</label>
+        {% set rel = emergency_contact_relation or user['emergency_contact_relation'] %}
+        <select id="emergency_contact_relation" name="emergency_contact_relation">
+          <option value="">Selecione...</option>
+          <option value="pai" {% if rel == 'pai' %}selected{% endif %}>Pai</option>
+          <option value="mae" {% if rel == 'mae' %}selected{% endif %}>Mãe</option>
+          <option value="cuidador" {% if rel == 'cuidador' %}selected{% endif %}>Cuidador</option>
+        </select>
+      </div>
+
+      <hr style="border-color:#1f2937; margin: 1rem 0;" />
+      <p class="muted">Alterar senha (opcional)</p>
+      <div class="form-group">
+        <label for="current_password">Senha atual</label>
+        <input type="password" id="current_password" name="current_password" placeholder="Informe sua senha atual">
+      </div>
+      <div class="form-group">
+        <label for="new_password">Nova senha</label>
+        <input type="password" id="new_password" name="new_password" placeholder="Crie uma nova senha">
+      </div>
+      <div class="form-group">
+        <label for="confirm_password">Confirmar nova senha</label>
+        <input type="password" id="confirm_password" name="confirm_password" placeholder="Repita a nova senha">
+      </div>
+
+      <button type="submit" class="btn primary">Salvar alterações</button>
+    </form>
+  </section>
+{% endblock %}

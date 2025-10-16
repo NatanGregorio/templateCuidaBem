@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Checklist de atividades físicas</h2>
+    <form method="post" action="{{ url_for('activities') }}">
+      <div class="form-group">
+        <label>Atividade</label>
+        <div style="display:flex; flex-wrap:wrap; gap:.5rem;">
+          {% for slug, label in categories %}
+            <label class="card" style="padding:.5rem 1rem; display:flex; align-items:center; gap:.5rem; cursor:pointer;">
+              <input type="radio" name="category" value="{{ slug }}" {% if category_prev == slug %}checked{% endif %} required>
+              <span>{{ label }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="duration">Tempo (minutos)</label>
+        <input type="number" id="duration" name="duration" required min="1" step="1" placeholder="Ex: 45" value="{{ duration_prev or '' }}">
+      </div>
+      <div class="form-group">
+        <label for="date">Data</label>
+        <input type="date" id="date" name="date" required value="{{ date_prev or date_default }}">
+      </div>
+      <div class="form-group">
+        <label for="time">Hora</label>
+        <input type="time" id="time" name="time" required value="{{ time_prev or time_default }}">
+      </div>
+      <button type="submit" class="btn primary">Registrar</button>
+    </form>
+  </section>
+
+  <section class="card" style="margin-top:1rem;">
+    <h2>Resumo mensal ({{ month_key }})</h2>
+    {% if summary and summary|length > 0 %}
+      <table style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:.5rem; border-bottom:1px solid #1f2937;">Categoria</th>
+            <th style="text-align:left; padding:.5rem; border-bottom:1px solid #1f2937;">Quantidade</th>
+            <th style="text-align:left; padding:.5rem; border-bottom:1px solid #1f2937;">Tempo total (min)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in summary %}
+            <tr>
+              <td style="padding:.5rem; border-bottom:1px solid #1f2937;">{{ category_labels[row['category']] }}</td>
+              <td style="padding:.5rem; border-bottom:1px solid #1f2937;">{{ row['count'] }}</td>
+              <td style="padding:.5rem; border-bottom:1px solid #1f2937;">{{ row['total'] }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">Ainda não há atividades registradas neste mês.</p>
+    {% endif %}
+  </section>
+
+  <section class="card" style="margin-top:1rem;">
+    <h2>Últimas atividades</h2>
+    {% if entries and entries|length > 0 %}
+      <table style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:.5rem; border-bottom:1px solid #1f2937;">Data/Hora</th>
+            <th style="text-align:left; padding:.5rem; border-bottom:1px solid #1f2937;">Atividade</th>
+            <th style="text-align:left; padding:.5rem; border-bottom:1px solid #1f2937;">Tempo (min)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in entries %}
+            <tr>
+              <td style="padding:.5rem; border-bottom:1px solid #1f2937;">{{ e['performed_at'] }}</td>
+              <td style="padding:.5rem; border-bottom:1px solid #1f2937;">{{ category_labels[e['category']] }}</td>
+              <td style="padding:.5rem; border-bottom:1px solid #1f2937;">{{ e['duration_minutes'] }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">Nenhuma atividade registrada ainda.</p>
+    {% endif %}
+  </section>
+{% endblock %}

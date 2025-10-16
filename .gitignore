@@ -1,0 +1,19 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local database (usado em desenvolvimento)
+cuidabem.db
+
+# Environment files
+.env
+
+# OS artifacts
+.DS_Store
+Thumbs.db
