@@ -92,6 +92,7 @@ def init_db():
             emergency_contact_phone TEXT,
             emergency_contact_name TEXT,
             emergency_contact_relation TEXT,
+            active INTEGER NOT NULL DEFAULT 1,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         """
@@ -106,6 +107,7 @@ def init_db():
         ("emergency_contact_phone", "TEXT"),
         ("emergency_contact_name", "TEXT"),
         ("emergency_contact_relation", "TEXT"),
+        ("active", "INTEGER NOT NULL DEFAULT 1"),
     ]
     for name, typ in to_add:
         if name not in cols:
@@ -222,6 +224,15 @@ def index():
         if not user or not check_password_hash(user["password_hash"], password):
             flash("Login ou senha inválidos.", "error")
             return render_template("login.html")
+
+        # Bloquear login se usuário estiver desativado
+        try:
+            if int(user["active"]) == 0:
+                flash("Usuário desativado. Contate o administrador.", "error")
+                return render_template("login.html")
+        except Exception:
+            # Se a coluna não existir por algum motivo, permitir login
+            pass
 
         session["user_id"] = user["id"]
         session["user_name"] = user["name"]
@@ -526,17 +537,39 @@ def usuarios():
     if request.method == "POST":
         action = request.form.get("action")
         user_id = request.form.get("user_id")
-        if action == "delete" and user_id:
-            row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
-            if not row:
+        if user_id:
+            if action == "delete":
+                row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+                if not row:
+                    conn.close()
+                    flash("Usuário não encontrado.", "error")
+                    return redirect(url_for("usuarios"))
+                conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+                conn.commit()
                 conn.close()
-                flash("Usuário não encontrado.", "error")
+                flash("Usuário excluído com sucesso.", "success")
                 return redirect(url_for("usuarios"))
-            conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
-            conn.commit()
-            conn.close()
-            flash("Usuário excluído com sucesso.", "success")
-            return redirect(url_for("usuarios"))
+            elif action in ("activate", "deactivate", "toggle"):
+                row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+                if not row:
+                    conn.close()
+                    flash("Usuário não encontrado.", "error")
+                    return redirect(url_for("usuarios"))
+                try:
+                    current = int(row["active"]) if row["active"] is not None else 1
+                except Exception:
+                    current = 1
+                if action == "activate":
+                    new_active = 1
+                elif action == "deactivate":
+                    new_active = 0
+                else:  # toggle
+                    new_active = 0 if current else 1
+                conn.execute("UPDATE users SET active = ? WHERE id = ?", (new_active, user_id))
+                conn.commit()
+                conn.close()
+                flash("Usuário ativado." if new_active == 1 else "Usuário desativado.", "success")
+                return redirect(url_for("usuarios"))
 
     users = conn.execute(
         "SELECT * FROM users ORDER BY created_at DESC"

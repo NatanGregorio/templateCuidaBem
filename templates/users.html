@@ -3,7 +3,7 @@
 {% block content %}
   <section class="card">
     <h2>Usuários cadastrados</h2>
-    <p class="muted">Listagem apenas de nomes dos usuários.</p>
+    <p class="muted">Ative, desative ou exclua usuários conforme necessário.</p>
     <a class="btn primary" href="{{ url_for('index') }}">Voltar</a>
   </section>
 
@@ -11,13 +11,23 @@
     {% if users and users|length > 0 %}
       <ul style="list-style:none; padding:0; margin:0;">
         {% for u in users %}
-          <li class="card" style="padding:.6rem .75rem; margin:.5rem 0; display:flex; align-items:center; justify-content:space-between; gap:.5rem;">
-            <span>{{ u['name'] }}</span>
-            <form method="post" action="{{ url_for('usuarios') }}" onsubmit="return confirm('Tem certeza que deseja excluir este usuário? Esta ação é irreversível.');" style="margin:0;">
-              <input type="hidden" name="action" value="delete" />
-              <input type="hidden" name="user_id" value="{{ u['id'] }}" />
-              <button type="submit" class="btn danger">Excluir</button>
-            </form>
+          <li class="card" style="padding:.6rem .75rem; margin:.5rem 0; display:flex; align-items:center; justify-content:space-between; gap:.75rem;">
+            <div style="display:flex; align-items:center; gap:.5rem;">
+              <span>{{ u['name'] }}</span>
+              <span class="status-badge {{ 'active' if u['active'] else 'inactive' }}">{{ 'Ativo' if u['active'] else 'Inativo' }}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:.5rem;">
+              <form method="post" action="{{ url_for('usuarios') }}" style="margin:0;">
+                <input type="hidden" name="action" value="toggle" />
+                <input type="hidden" name="user_id" value="{{ u['id'] }}" />
+                <button type="submit" class="btn">{{ 'Desativar' if u['active'] else 'Ativar' }}</button>
+              </form>
+              <form method="post" action="{{ url_for('usuarios') }}" onsubmit="return confirm('Tem certeza que deseja excluir este usuário? Esta ação é irreversível.');" style="margin:0;">
+                <input type="hidden" name="action" value="delete" />
+                <input type="hidden" name="user_id" value="{{ u['id'] }}" />
+                <button type="submit" class="btn danger">Excluir</button>
+              </form>
+            </div>
           </li>
         {% endfor %}
       </ul>

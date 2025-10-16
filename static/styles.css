@@ -105,3 +105,64 @@ select option { color: #1e3a8a; background: #ffffff; }
 }
 .modal-content h3 { margin-top: 0; color: var(--text); }
 .modal-actions { display: flex; justify-content: flex-end; margin-top: 1rem; }
+
+/* Tema azul para página de usuários */
+.theme-users {
+  --bg: #4a90c2; /* azul não tão escuro */
+  --text: #ffffff;
+  --accent: #2563eb; /* azul vivo para botões/links */
+  --muted: rgba(255, 255, 255, 0.85);
+}
+.theme-users .site-header {
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+.theme-users .brand, .theme-users .brand a { color: #ffffff; }
+.theme-users nav a { color: #ffffff; }
+.theme-users nav a:hover { color: #e2e8f0; }
+.theme-users .card {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+}
+.theme-users .form-group label { color: rgba(255, 255, 255, 0.9); }
+.theme-users .form-group input,
+.theme-users .form-group textarea {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+.theme-users .form-group input:focus,
+.theme-users .form-group textarea:focus {
+  border-color: #e2e8f0;
+  box-shadow: 0 0 0 3px rgba(226, 232, 240, 0.25);
+}
+.theme-users select {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+.theme-users select option { color: #1e3a8a; background: #ffffff; }
+.theme-users .site-footer { color: rgba(255, 255, 255, 0.85); border-top-color: rgba(255, 255, 255, 0.25); }
+
+/* Badge de status de usuário */
+.status-badge {
+  padding: .2rem .5rem;
+  border-radius: 999px;
+  font-size: .8rem;
+  font-weight: 600;
+}
+/* Legibilidade no tema claro padrão */
+.status-badge.active {
+  background: #d1fae5;
+  border: 1px solid #10b981;
+  color: #065f46;
+}
+.status-badge.inactive {
+  background: #fee2e2;
+  border: 1px solid #ef4444;
+  color: #991b1b;
+}
+/* Ajuste de contraste quando usado com .theme-users (fundo escuro) */
+.theme-users .status-badge.active { color: #d1fae5; }
+.theme-users .status-badge.inactive { color: #fee2e2; }
