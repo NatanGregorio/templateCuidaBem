@@ -186,5 +186,63 @@
       });
     }
   </script>
+  <script>
+    // Máscara para todos os campos de telefone (input[type="tel"]) — padrão BR
+    (function(){
+      function formatPhone(val){
+        var d = (val || '').replace(/\D/g, '').slice(0, 11);
+        var out = '';
+        if (d.length === 0) return '';
+        if (d.length <= 2) {
+          out = '(' + d;
+        } else if (d.length <= 6) {
+          out = '(' + d.slice(0,2) + ') ' + d.slice(2);
+        } else if (d.length <= 10) {
+          out = '(' + d.slice(0,2) + ') ' + d.slice(2,6) + '-' + d.slice(6);
+        } else {
+          out = '(' + d.slice(0,2) + ') ' + d.slice(2,7) + '-' + d.slice(7);
+        }
+        return out;
+      }
+      function applyMask(el){
+        var val = el.value || '';
+        var formatted = formatPhone(val);
+        if (formatted !== val) { el.value = formatted; }
+      }
+      function bindMask(el){
+        if (!el || el.__phoneMaskBound) return;
+        el.__phoneMaskBound = true;
+        ['input','blur','change'].forEach(function(ev){
+          el.addEventListener(ev, function(){ applyMask(el); });
+        });
+        // Aplicar no carregamento se já houver valor
+        applyMask(el);
+      }
+      function init(){
+        var phones = document.querySelectorAll('input[type="tel"]');
+        for (var i=0; i<phones.length; i++) { bindMask(phones[i]); }
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+      // Observador para inputs inseridos dinamicamente
+      try {
+        var mo = new MutationObserver(function(muts){
+          muts.forEach(function(m){
+            m.addedNodes && m.addedNodes.forEach(function(n){
+              if (n && n.nodeType === 1) {
+                if (n.matches && n.matches('input[type="tel"]')) { bindMask(n); }
+                var inner = n.querySelectorAll ? n.querySelectorAll('input[type="tel"]') : [];
+                for (var i=0; i<inner.length; i++) { bindMask(inner[i]); }
+              }
+            });
+          });
+        });
+        mo.observe(document.documentElement, { childList: true, subtree: true });
+      } catch(e){}
+    })();
+  </script>
 </body>
 </html>

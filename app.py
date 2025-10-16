@@ -1,4 +1,5 @@
 import os
+import shutil
 import sqlite3
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session
@@ -84,6 +85,7 @@ def init_db():
             weight REAL,
             diabetes_type TEXT,
             phone TEXT,
+            emergency_contact_phone TEXT,
             emergency_contact_name TEXT,
             emergency_contact_relation TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -97,6 +99,7 @@ def init_db():
         ("weight", "REAL"),
         ("diabetes_type", "TEXT"),
         ("phone", "TEXT"),
+        ("emergency_contact_phone", "TEXT"),
         ("emergency_contact_name", "TEXT"),
         ("emergency_contact_relation", "TEXT"),
     ]
@@ -293,7 +296,8 @@ def register():
         height_str = request.form.get("height", "").strip()
         weight_str = request.form.get("weight", "").strip()
         diabetes_type = request.form.get("diabetes_type", "").strip()
-        phone = request.form.get("phone", "").strip()
+        phone_raw = request.form.get("phone", "").strip()
+        emergency_contact_phone_raw = request.form.get("emergency_contact_phone", "").strip()
         emergency_contact_name = request.form.get("emergency_contact_name", "").strip()
         emergency_contact_relation = request.form.get("emergency_contact_relation", "").strip()
 
@@ -310,10 +314,16 @@ def register():
         allowed_diabetes = {slug for slug, _ in DIABETES_TYPES}
         if not diabetes_type or diabetes_type not in allowed_diabetes:
             errors.append("Tipo de diabetes inválido.")
-        if not phone:
-            errors.append("Telefone é obrigatório.")
+        def digits_only(s):
+            return "".join(ch for ch in (s or "") if ch.isdigit())
+        phone = digits_only(phone_raw)
+        emergency_contact_phone = digits_only(emergency_contact_phone_raw)
+        if not phone or len(phone) not in (10, 11):
+            errors.append("Telefone inválido. Informe DDD + número (10 ou 11 dígitos).")
         if not emergency_contact_name:
-            errors.append("Nome de contato para emergência é obrigatório.")
+            errors.append("Nome do responsável é obrigatório.")
+        if not emergency_contact_phone or len(emergency_contact_phone) not in (10, 11):
+            errors.append("Telefone do responsável inválido. Informe DDD + número (10 ou 11 dígitos).")
         allowed_rel = {slug for slug, _ in EMERGENCY_RELATIONS}
         if not emergency_contact_relation or emergency_contact_relation not in allowed_rel:
             errors.append("Relação de emergência inválida.")
@@ -359,8 +369,8 @@ def register():
             INSERT INTO users (
                 name, email, username, password_hash,
                 height, weight, diabetes_type, phone,
-                emergency_contact_name, emergency_contact_relation
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                emergency_contact_phone, emergency_contact_name, emergency_contact_relation
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 name,
@@ -371,6 +381,7 @@ def register():
                 weight_val,
                 diabetes_type,
                 phone,
+                emergency_contact_phone,
                 emergency_contact_name,
                 emergency_contact_relation,
             ),
@@ -543,7 +554,8 @@ def account():
         height_str = request.form.get("height", "").strip()
         weight_str = request.form.get("weight", "").strip()
         diabetes_type = request.form.get("diabetes_type", "").strip()
-        phone = request.form.get("phone", "").strip()
+        phone_raw = request.form.get("phone", "").strip()
+        emergency_contact_phone_raw = request.form.get("emergency_contact_phone", "").strip()
         emergency_contact_name = request.form.get("emergency_contact_name", "").strip()
         emergency_contact_relation = request.form.get("emergency_contact_relation", "").strip()
 
@@ -610,6 +622,7 @@ def account():
                 weight=weight_str,
                 diabetes_type=diabetes_type,
                 phone=phone,
+                emergency_contact_phone=emergency_contact_phone,
                 emergency_contact_name=emergency_contact_name,
                 emergency_contact_relation=emergency_contact_relation,
             )
@@ -621,7 +634,7 @@ def account():
                 UPDATE users SET
                     name = ?, email = ?, username = ?, password_hash = ?,
                     height = ?, weight = ?, diabetes_type = ?, phone = ?,
-                    emergency_contact_name = ?, emergency_contact_relation = ?
+                    emergency_contact_phone = ?, emergency_contact_name = ?, emergency_contact_relation = ?
                 WHERE id = ?
                 """,
                 (
@@ -633,6 +646,7 @@ def account():
                     weight_val,
                     diabetes_type,
                     phone,
+                    emergency_contact_phone,
                     emergency_contact_name,
                     emergency_contact_relation,
                     user_id,
@@ -644,7 +658,7 @@ def account():
                 UPDATE users SET
                     name = ?, email = ?, username = ?,
                     height = ?, weight = ?, diabetes_type = ?, phone = ?,
-                    emergency_contact_name = ?, emergency_contact_relation = ?
+                    emergency_contact_phone = ?, emergency_contact_name = ?, emergency_contact_relation = ?
                 WHERE id = ?
                 """,
                 (
@@ -655,6 +669,7 @@ def account():
                     weight_val,
                     diabetes_type,
                     phone,
+                    emergency_contact_phone,
                     emergency_contact_name,
                     emergency_contact_relation,
                     user_id,
@@ -1125,6 +1140,55 @@ def activities_dashboard():
         total_minutes=total_minutes,
         top_category_label=top_category_label,
     )
+
+
+@app.route("/admin/db", methods=["GET", "POST"])
+def admin_db():
+    # Apenas administrador pode acessar
+    if not session.get("is_admin"):
+        flash("Acesso restrito ao administrador.", "error")
+        return redirect(url_for("index"))
+
+    if request.method == "POST":
+        file = request.files.get("dbfile")
+        if not file or not file.filename:
+            flash("Selecione um arquivo .db para enviar.", "error")
+            return render_template("admin_db.html", db_path=DB_PATH)
+        fname = file.filename.lower()
+        if not fname.endswith(".db"):
+            flash("Arquivo inválido. Envie um arquivo com extensão .db.", "error")
+            return render_template("admin_db.html", db_path=DB_PATH)
+
+        # Garantir diretório do banco
+        try:
+            os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+        except Exception:
+            pass
+
+        backup_path = None
+        tmp_path = DB_PATH + ".upload.tmp"
+        try:
+            # Fazer backup se existir um banco atual
+            if os.path.exists(DB_PATH):
+                ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+                backup_path = DB_PATH + f".bak-{ts}"
+                shutil.copy2(DB_PATH, backup_path)
+            # Salvar temporário e substituir
+            file.save(tmp_path)
+            os.replace(tmp_path, DB_PATH)
+        except Exception as e:
+            try:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+            except Exception:
+                pass
+            flash(f"Falha ao atualizar banco: {e}", "error")
+            return render_template("admin_db.html", db_path=DB_PATH, backup_path=backup_path)
+
+        flash("Banco atualizado com sucesso." + (f" Backup criado em: {backup_path}" if backup_path else ""), "success")
+        return redirect(url_for("admin_db"))
+
+    return render_template("admin_db.html", db_path=DB_PATH)
 
 
 if __name__ == "__main__":

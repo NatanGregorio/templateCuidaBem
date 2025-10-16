@@ -33,6 +33,11 @@ nav a:hover { color: var(--accent); }
 }
 .card h2 { margin-top: 0; color: var(--text); }
 
+/* Cabeçalhos com ícones nas features */
+.feature-head { display: flex; align-items: center; gap: .5rem; margin-bottom: .25rem; }
+.feature-head h3 { margin: 0; color: var(--text); }
+.feature-icon { width: 28px; height: 28px; color: var(--accent); flex: 0 0 auto; }
+
 .form-group { margin-bottom: 1rem; }
 .form-group label { display: block; margin-bottom: .5rem; color: var(--muted); }
 .form-group input {

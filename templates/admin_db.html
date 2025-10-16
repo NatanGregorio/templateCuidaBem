@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<section>
+  <h2>Admin: Banco de Dados</h2>
+  <p class="muted">Caminho atual do banco: <code>{{ db_path }}</code></p>
+  {% if backup_path %}
+    <p class="muted">Backup recente: <code>{{ backup_path }}</code></p>
+  {% endif %}
+  <p>Envie um arquivo <strong>.db</strong> (SQLite) para substituir o banco atual. Um backup automático será criado, se existir um banco prévio.</p>
+  <form action="{{ url_for('admin_db') }}" method="post" enctype="multipart/form-data" class="form-grid">
+    <label for="dbfile">Arquivo do banco (.db)</label>
+    <input type="file" id="dbfile" name="dbfile" accept=".db" required>
+    <div class="form-actions">
+      <button type="submit" class="btn primary">Enviar e substituir</button>
+      <a href="{{ url_for('features') }}" class="btn">Cancelar</a>
+    </div>
+  </form>
+  <div class="note">
+    <small>Observação: apenas usuários administradores podem acessar esta página.</small>
+  </div>
+  <hr>
+  <h3>Exportar</h3>
+  <p>Para baixar o banco atual, utilize ferramentas do host ou crie uma rota de exportação dedicada (podemos adicionar isso se necessário).</p>
+</section>
+{% endblock %}
