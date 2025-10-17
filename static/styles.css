@@ -315,3 +315,65 @@ body { font-size: 1.05rem; }
             -webkit-box-orient: vertical;
             overflow: hidden;
           }
+/* Responsivo (mobile) */
+@media (max-width: 640px) {
+  .container { max-width: 100%; padding: 0.75rem; }
+  .header-wrap { flex-wrap: wrap; gap: .5rem; }
+  .brand { font-size: 1.2rem; }
+  .welcome-msg { display: block; margin: .25rem 0 0; }
+  nav a { margin-left: .5rem; padding: .35rem .55rem; font-size: .95rem; }
+  .card { padding: 1rem; }
+  .feature-icon { width: 24px; height: 24px; }
+
+  /* Grid das features: uma coluna em telas pequenas (override do inline) */
+  main.container > section[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+    gap: .5rem !important;
+  }
+  /* Ajustar botões de relatório no grid */
+  main.container > section[style*="grid-template-columns"] .actions-center { grid-column: auto !important; }
+
+  /* Grupos de rádio: duas colunas no mobile */
+  .measurements-page .radio-group,
+  .activities-page .radio-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Listagem de usuários: itens flex quebram linha */
+  .card ul li.card { flex-wrap: wrap; }
+  .card ul li.card > div { flex: 1 1 100%; }
+  .card ul li.card form .btn { width: 100%; }
+
+  /* Tabelas: permitir rolagem horizontal quando necessário */
+  .card table { display: block; overflow-x: auto; width: 100%; }
+}
+
+@media (max-width: 400px) {
+  /* Grupos de rádio: uma coluna em telas muito estreitas */
+  .measurements-page .radio-group,
+  .activities-page .radio-group {
+    grid-template-columns: 1fr;
+  }
+  nav a { font-size: .9rem; }
+}
+.card h2 { font-size: 1.6rem; }
+.form-group label { font-size: 1.1rem; }
+.form-group input { font-size: 1.05rem; }
+.btn { font-size: 1.05rem; }
+.btn.success { background: var(--success); color: #ffffff; font-weight: 700; }
+ .btn.success:focus { outline: none; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.28); }
+.login-card .muted,
+.login-card .muted a { font-size: 1.05rem; }
+.profile-page .form-group label { font-weight: 700; }
+.measurements-page .form-group label { font-weight: 700; }
+.measurements-page .unit-badge {
+  display: inline-block;
+  margin-left: .35rem;
+  padding: .05rem .4rem;
+  border-radius: .25rem;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: .85rem;
+  line-height: 1.2;
+}
