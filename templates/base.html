@@ -26,7 +26,9 @@
             {% endif %}
             <a href="{{ url_for('logout') }}">Sair</a>
           {% else %}
-            <a href="{{ url_for('index') }}" class="nav-back"><strong>Voltar</strong></a>
+            {% if request.endpoint != 'usuarios' %}
+              <a href="{{ url_for('index') }}" class="nav-back"><strong>Voltar</strong></a>
+            {% endif %}
             <a href="{{ url_for('logout') }}">Sair</a>
           {% endif %}
         {% endif %}
