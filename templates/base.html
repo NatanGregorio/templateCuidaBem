@@ -21,7 +21,7 @@
             {% if request.endpoint != 'account' and request.endpoint != 'measurements' and request.endpoint != 'activities' and request.endpoint != 'activities_dashboard' and request.endpoint != 'alerts' and request.endpoint != 'dashboard' %}
               <a href="{{ url_for('account') }}" class="nav-profile"><strong>Perfil</strong></a>
             {% endif %}
-            {% if request.endpoint != 'features' %}
+            {% if request.endpoint != 'features' and request.endpoint != 'account' %}
               <a href="{{ url_for('features') }}" class="nav-back"><strong>Voltar</strong></a>
             {% endif %}
             <a href="{{ url_for('logout') }}">Sair</a>
