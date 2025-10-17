@@ -1,16 +1,18 @@
 {% extends "base.html" %}
 
+{% block body_class %}activities-page{% endblock %}
+
 {% block content %}
   <section class="card">
     <h2>Checklist de atividades físicas</h2>
     <form method="post" action="{{ url_for('activities') }}">
       <div class="form-group">
-        <label>Atividade</label>
-        <div style="display:flex; flex-wrap:wrap; gap:.5rem;">
+        <label id="activity_category_label">Atividade</label>
+        <div style="display:flex; flex-wrap:nowrap; gap:.5rem; overflow-x:auto; -webkit-overflow-scrolling: touch;" role="radiogroup" aria-labelledby="activity_category_label">
           {% for slug, label in categories %}
-            <label class="card" style="padding:.5rem 1rem; display:flex; align-items:center; gap:.5rem; cursor:pointer;">
+            <label class="card" style="padding:.5rem 1rem; display:flex; align-items:center; gap:.5rem; cursor:pointer; flex:0 0 auto;">
               <input type="radio" name="category" value="{{ slug }}" {% if category_prev == slug %}checked{% endif %} required>
-              <span>{{ label }}</span>
+              <span style="font-weight:700; font-size:.95rem;">{{ label }}</span>
             </label>
           {% endfor %}
         </div>

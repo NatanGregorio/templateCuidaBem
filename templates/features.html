@@ -1,25 +1,10 @@
 {% extends "base.html" %}
 
-{% block content %}
-  <section class="card">
-    <h2>Funcionalidades{% if name %}, {{ name }}{% endif %}</h2>
-    <p class="muted">Acesse rapidamente todas as áreas do aplicativo.</p>
-  </section>
-
+ {% block content %}
   {% if is_logged_in %}
   <section style="display:grid; grid-template-columns: repeat(3, 1fr); gap: .75rem;">
-    <div class="card">
-      <div class="feature-head">
-        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <circle cx="12" cy="8" r="4" />
-          <path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
-        </svg>
-        <h3>Perfil</h3>
-      </div>
-      <p class="muted">Edite seus dados do cadastro.</p>
-      <a class="btn primary" href="{{ url_for('account') }}">Abrir</a>
-    </div>
-    <div class="card">
+    <!-- Medições: quadro azul com texto branco -->
+    <div class="card feature-blue clickable" data-href="{{ url_for('measurements') }}">
       <div class="feature-head">
         <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M12 2c4 6 6 8 6 12a6 6 0 1 1-12 0c0-4 2-6 6-12z" />
@@ -27,44 +12,22 @@
         <h3>Medições</h3>
       </div>
       <p class="muted">Registre suas medições de glicemia.</p>
-      <a class="btn primary" href="{{ url_for('measurements') }}">Abrir</a>
     </div>
-    <div class="card">
-      <div class="feature-head">
-        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M3 3v18h18" />
-          <path d="M6 15l5-6 4 3 5-7" />
-        </svg>
-        <h3>Histórico</h3>
-      </div>
-      <p class="muted">Resumo e gráfico das suas medições.</p>
-      <a class="btn primary" href="{{ url_for('dashboard') }}">Abrir</a>
-    </div>
-    <div class="card">
+
+    <!-- Atividades físicas: quadro verde com texto branco -->
+    <div class="card feature-green clickable" data-href="{{ url_for('activities') }}">
       <div class="feature-head">
         <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M3 10h3v4H3zM18 10h3v4h-3z" />
           <path d="M6 12h12" />
         </svg>
-        <h3>Atividades</h3>
+        <h3>Atividades físicas</h3>
       </div>
       <p class="muted">Registro de atividades físicas.</p>
-      <a class="btn primary" href="{{ url_for('activities') }}">Abrir</a>
     </div>
-    <div class="card">
-      <div class="feature-head">
-        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <rect x="3" y="3" width="8" height="8" />
-          <rect x="13" y="3" width="8" height="8" />
-          <rect x="3" y="13" width="8" height="8" />
-          <rect x="13" y="13" width="8" height="8" />
-        </svg>
-        <h3>Dashboard</h3>
-      </div>
-      <p class="muted">Análises e gráficos das suas atividades.</p>
-      <a class="btn primary" href="{{ url_for('activities_dashboard') }}">Abrir</a>
-    </div>
-    <div class="card">
+
+    <!-- Alertas: quadro vermelho com texto branco -->
+    <div class="card feature-red clickable" data-href="{{ url_for('alerts') }}">
       <div class="feature-head">
         <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M8 17H5l1-2v-4a7 7 0 1 1 14 0v4l1 2h-3" />
@@ -73,9 +36,33 @@
         <h3>Alertas</h3>
       </div>
       <p class="muted">Configure lembretes de medicação, refeições e mais.</p>
-      <a class="btn primary" href="{{ url_for('alerts') }}">Abrir</a>
     </div>
+
+    <!-- Botões de relatório abaixo dos respectivos cards -->
+    <div class="actions-center" style="grid-column: 1;">
+      <a class="btn primary" href="{{ url_for('dashboard') }}">Relatório de medições</a>
+    </div>
+    <div class="actions-center" style="grid-column: 2;">
+       <a class="btn success" href="{{ url_for('activities_dashboard') }}">Relatório de atividades</a>
+     </div>
+
   </section>
+  <script>
+    (function(){
+      var cards = document.querySelectorAll('.card.clickable');
+      for (var i=0; i<cards.length; i++) {
+        (function(card){
+          var href = card.getAttribute('data-href');
+          if (!href) return;
+          card.addEventListener('click', function(){ window.location.href = href; });
+        })(cards[i]);
+      }
+      var buttons = document.querySelectorAll('.card .btn');
+      for (var j=0; j<buttons.length; j++) {
+        buttons[j].addEventListener('click', function(e){ e.stopPropagation(); });
+      }
+    })();
+  </script>
   {% else %}
   <section style="display:grid; grid-template-columns: repeat(2, 1fr); gap: .75rem;">
     <div class="card">

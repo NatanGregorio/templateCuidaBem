@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block body_class %}alerts-page{% endblock %}
+
 {% block content %}
   <section class="card">
     <h2>Alertas</h2>
@@ -7,24 +9,27 @@
     <form method="post" action="{{ url_for('alerts') }}">
       <input type="hidden" name="action" value="create">
       <div class="form-group">
-        <label for="alert_type">Tipo de alerta</label>
-        <select id="alert_type" name="alert_type" required>
+        <label id="alert_type_label">Tipo de alerta</label>
+        <div style="display:grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap:.5rem; justify-items: stretch; align-items: stretch;" role="radiogroup" aria-labelledby="alert_type_label">
           {% for slug, label in alert_types %}
-            <option value="{{ slug }}" {% if alert_type_prev == slug %}selected{% endif %}>{{ label }}</option>
+            <label class="card" style="padding:.5rem 1rem; display:flex; align-items:center; gap:.5rem; cursor:pointer; width:100%;">
+              <input type="radio" name="alert_type" value="{{ slug }}" {% if alert_type_prev == slug %}checked{% endif %} required>
+              <span style="font-weight:700; font-size:.95rem;">{{ label }}</span>
+            </label>
           {% endfor %}
-        </select>
+        </div>
       </div>
       <div class="form-group">
         <label for="alert_time">Horário</label>
         <input type="time" id="alert_time" name="alert_time" required value="{{ alert_time_prev or '' }}">
       </div>
       <div class="form-group">
-        <label>Dias da semana (ou escolha uma data específica abaixo)</label>
-        <div style="display:flex; flex-wrap:wrap; gap:.5rem;">
+        <label id="days_of_week_label">Dias da semana (ou escolha uma data específica abaixo)</label>
+        <div style="display:grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap:.5rem; justify-items: stretch; align-items: stretch;" role="group" aria-labelledby="days_of_week_label">
           {% for dslug, dlabel in days_of_week %}
-            <label style="display:flex; align-items:center; gap:.25rem;">
+             <label class="card" style="padding:.5rem 1rem; display:flex; align-items:center; gap:.5rem; cursor:pointer; width:100%; box-sizing:border-box;">
               <input type="checkbox" name="days" value="{{ dslug }}" {% if days_prev and (dslug in days_prev) %}checked{% endif %}>
-              <span>{{ dlabel }}</span>
+              <span title="{{ dlabel }}" style="font-weight:700; font-size:.95rem; line-height:1.2; white-space:nowrap;">{{ (dlabel.split(' ')[0])[:3] }}</span>
             </label>
           {% endfor %}
         </div>
@@ -59,21 +64,24 @@
                   <input type="hidden" name="action" value="update">
                   <input type="hidden" name="alert_id" value="{{ a['id'] }}">
                   <td style="padding:.5rem; border-bottom:1px solid #1f2937;">
-                    <select name="alert_type" required>
+                    <div style="display:grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap:.5rem; justify-items: stretch; align-items: stretch;" role="radiogroup" aria-label="Tipo de alerta">
                       {% for slug, label in alert_types %}
-                        <option value="{{ slug }}" {% if edit_alert['alert_type'] == slug %}selected{% endif %}>{{ label }}</option>
+                        <label class="card" style="padding:.5rem 1rem; display:flex; align-items:center; gap:.5rem; cursor:pointer; width:100%;">
+                          <input type="radio" name="alert_type" value="{{ slug }}" {% if edit_alert['alert_type'] == slug %}checked{% endif %} required>
+                          <span style="font-weight:700; font-size:.95rem;">{{ label }}</span>
+                        </label>
                       {% endfor %}
-                    </select>
+                    </div>
                   </td>
                   <td style="padding:.5rem; border-bottom:1px solid #1f2937;">
                     <input type="time" name="alert_time" required value="{{ edit_alert['alert_time'] }}">
                   </td>
                 <td style="padding:.5rem; border-bottom:1px solid #1f2937;">
-                  <div style="display:flex; flex-wrap:wrap; gap:.25rem;">
+                  <div style="display:grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap:.5rem; justify-items: stretch; align-items: stretch;" role="group" aria-label="Dias da semana">
                     {% for dslug, dlabel in days_of_week %}
-                      <label style="display:flex; align-items:center; gap:.25rem;">
+                      <label class="card" style="padding:.5rem 1rem; display:flex; align-items:center; gap:.5rem; cursor:pointer; width:100%; box-sizing:border-box;">
                         <input type="checkbox" name="days" value="{{ dslug }}" {% if dslug in edit_days %}checked{% endif %}>
-                        <span>{{ dlabel }}</span>
+                        <span title="{{ dlabel }}" style="font-weight:700; font-size:.95rem; line-height:1.2; white-space:nowrap;">{{ (dlabel.split(' ')[0])[:3] }}</span>
                       </label>
                     {% endfor %}
                   </div>

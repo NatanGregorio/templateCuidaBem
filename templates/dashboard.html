@@ -4,10 +4,12 @@
   <section class="card">
     <h2>Dashboard{% if name %}, {{ name }}{% endif %}</h2>
     <p class="muted">Resumo das suas medições de glicemia.</p>
-    <form method="get" action="{{ url_for('dashboard') }}" style="display:flex; gap:.5rem; align-items:center; margin:.5rem 0;">
-      <label for="month" class="muted">Mês fechado:</label>
-      <input type="month" id="month" name="month" value="{{ month_key }}">
-      <button class="btn" type="submit">Filtrar</button>
+    <form method="get" action="{{ url_for('dashboard') }}" style="display:flex; gap:.5rem; align-items:flex-end; margin:.5rem 0;">
+      <div class="form-group" style="margin:0;">
+        <label for="month">Mês fechado</label>
+        <input type="month" id="month" name="month" value="{{ month_key }}">
+      </div>
+      <button class="btn primary" type="submit">Filtrar</button>
     </form>
     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .75rem;">
       <div class="card" style="padding:1rem;">
@@ -69,6 +71,9 @@
   <script>
     const labels = {{ labels|tojson }};
     const dataValues = {{ values|tojson }};
+    const mutedColor = '#94a3b8';
+    const accent = '#22d3ee';
+    const accent2 = '#a78bfa';
     const ctx = document.getElementById('glucoseChart').getContext('2d');
     const chart = new Chart(ctx, {
       type: 'line',
@@ -77,8 +82,8 @@
         datasets: [{
           label: 'Glicemia (mg/dL)',
           data: dataValues,
-          borderColor: '#2d799c',
-          backgroundColor: 'rgba(45, 121, 156, 0.25)',
+          borderColor: accent,
+          backgroundColor: 'rgba(34, 211, 238, 0.2)',
           tension: 0.25,
           pointRadius: 2
         }]
@@ -107,8 +112,8 @@
           datasets: [{
             label: 'Média diária (mg/dL)',
             data: dailyAvgs,
-            borderColor: '#2d799c',
-            backgroundColor: 'rgba(45, 121, 156, 0.35)'
+            borderColor: accent,
+            backgroundColor: 'rgba(34, 211, 238, 0.35)'
           }]
         },
         options: {
@@ -134,8 +139,8 @@
           datasets: [{
             label: 'Média por contexto (mg/dL)',
             data: contextAvgs,
-            borderColor: '#2d799c',
-            backgroundColor: 'rgba(45, 121, 156, 0.35)'
+            borderColor: accent2,
+            backgroundColor: 'rgba(167, 139, 250, 0.35)'
           }]
         },
         options: {

@@ -1,11 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <section class="card">
-    <h2>Usuários cadastrados</h2>
-    <p class="muted">Ative, desative ou exclua usuários conforme necessário.</p>
-    <a class="btn primary" href="{{ url_for('index') }}">Voltar</a>
-  </section>
 
   <section class="card" style="margin-top:1rem;">
     {% if users and users|length > 0 %}

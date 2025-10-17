@@ -12,10 +12,23 @@
   <header class="site-header">
     <div class="container header-wrap">
       <h1 class="brand"><a href="{{ url_for('features') }}">CuidaBem</a></h1>
+      {% if session.get('user_id') %}
+        <span class="welcome-msg">Bem-vindo(a), {{ session.get('user_name') }}</span>
+      {% endif %}
       <nav>
-        {% if session.get('user_id') %}
-          <a href="{{ url_for('features') }}">Voltar</a>
-          <a href="{{ url_for('logout') }}">Sair</a>
+        {% if session.get('user_id') or session.get('is_admin') %}
+          {% if session.get('user_id') %}
+            {% if request.endpoint != 'account' and request.endpoint != 'measurements' and request.endpoint != 'activities' and request.endpoint != 'activities_dashboard' and request.endpoint != 'alerts' and request.endpoint != 'dashboard' %}
+              <a href="{{ url_for('account') }}" class="nav-profile"><strong>Perfil</strong></a>
+            {% endif %}
+            {% if request.endpoint != 'features' %}
+              <a href="{{ url_for('features') }}" class="nav-back"><strong>Voltar</strong></a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}">Sair</a>
+          {% else %}
+            <a href="{{ url_for('index') }}" class="nav-back"><strong>Voltar</strong></a>
+            <a href="{{ url_for('logout') }}">Sair</a>
+          {% endif %}
         {% endif %}
       </nav>
     </div>

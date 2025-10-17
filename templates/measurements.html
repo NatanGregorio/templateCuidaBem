@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block body_class %}measurements-page{% endblock %}
+
 {% block content %}
   <section class="card">
     <h2>Registrar medição de glicemia</h2>
@@ -13,17 +15,19 @@
         <input type="time" id="time" name="time" required value="{{ time_prev or time_default }}">
       </div>
       <div class="form-group">
-        <label for="level">Nível (mg/dL)</label>
+        <label for="level">Nível <span class="unit-badge">mg/dL</span></label>
         <input type="number" id="level" name="level" required step="0.1" min="20" max="600" placeholder="Ex: 105" value="{{ level_prev or '' }}">
       </div>
       <div class="form-group">
-        <label for="measurement_context">Momento da medição</label>
-        <select id="measurement_context" name="measurement_context" required>
-          <option value="" disabled {% if not context_prev %}selected{% endif %}>Selecione</option>
+        <label id="measurement_context_label">Momento da medição</label>
+        <div class="radio-group" role="radiogroup" aria-labelledby="measurement_context_label">
           {% for slug, label in measurement_contexts %}
-            <option value="{{ slug }}" {% if context_prev == slug %}selected{% endif %}>{{ label }}</option>
+            <label class="card radio-option" style="padding:.5rem 1rem; display:flex; align-items:center; gap:.5rem; cursor:pointer;">
+              <input type="radio" name="measurement_context" value="{{ slug }}" {% if context_prev == slug %}checked{% endif %} required>
+              <span>{{ label }}</span>
+            </label>
           {% endfor %}
-        </select>
+        </div>
       </div>
       <div class="form-group">
         <label for="notes">Observações (opcional)</label>

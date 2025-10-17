@@ -166,3 +166,152 @@ select option { color: #1e3a8a; background: #ffffff; }
 /* Ajuste de contraste quando usado com .theme-users (fundo escuro) */
 .theme-users .status-badge.active { color: #d1fae5; }
 .theme-users .status-badge.inactive { color: #fee2e2; }
+
+/* Variações de cor para quadros das features */
+.card.feature-blue {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+.card.feature-blue .feature-head h3,
+.card.feature-blue .feature-icon { color: #ffffff; }
+.card.feature-blue .muted { color: rgba(255, 255, 255, 0.9); }
+
+.card.feature-red {
+  background: var(--error);
+  border-color: var(--error);
+  color: #ffffff;
+}
+.card.feature-red .feature-head h3,
+.card.feature-red .feature-icon { color: #ffffff; }
+.card.feature-red .muted { color: rgba(255, 255, 255, 0.95); }
+
+/* Novo: quadro verde para Atividades físicas */
+.card.feature-green {
+  background: var(--success);
+  border-color: var(--success);
+  color: #ffffff;
+}
+.card.feature-green .feature-head h3,
+.card.feature-green .feature-icon { color: #ffffff; }
+.card.feature-green .muted { color: rgba(255, 255, 255, 0.95); }
+
+/* Cards clicáveis */
+.card.clickable { cursor: pointer; }
+.card.clickable:hover { filter: brightness(1.03); }
+
+/* Centralização dos botões de relatório dentro dos cards */
+.actions-center { display: flex; justify-content: center; margin-top: .75rem; }
+
+/* Destaque do botão Perfil na navbar */
+.site-header nav a.nav-profile {
+  background: var(--accent);
+  color: #ffffff;
+  padding: .4rem .6rem;
+  border-radius: 6px;
+  font-weight: 700;
+}
+.site-header nav a.nav-profile:hover { filter: brightness(1.05); }
+
+/* Estilo do botão Voltar na navbar */
+.site-header nav a.nav-back {
+  background: var(--accent);
+  color: #ffffff;
+  padding: .4rem .6rem;
+  border-radius: 6px;
+  font-weight: 700;
+}
+.site-header nav a.nav-back:hover { filter: brightness(1.05); }
+
+/* Mensagem de boas-vindas ao lado da marca */
+.welcome-msg { margin-left: .75rem; color: var(--muted); font-weight: 600; }
+
+/* Fontes globais iguais à página de login */
+body { font-size: 1.05rem; }
+.card h2 { font-size: 1.6rem; }
+.form-group label { font-size: 1.1rem; }
+.form-group input { font-size: 1.05rem; }
+.btn { font-size: 1.05rem; }
+
+/* Botão sucesso (verde) igual ao fundo do card de atividades) */
+.btn.success { background: var(--success); color: #ffffff; font-weight: 700; }
+ .btn.success:focus { outline: none; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.28); }
+.login-card .muted,
+.login-card .muted a { font-size: 1.05rem; }
+
+/* Negrito dos labels na página de Perfil */
+.profile-page .form-group label { font-weight: 700; }
+
+/* Negrito dos labels na página de Medições */
+.measurements-page .form-group label { font-weight: 700; }
+
+/* Badge de unidade para Nível (mg/dL) em Medições */
+.measurements-page .unit-badge {
+  display: inline-block;
+  margin-left: .35rem;
+  padding: .05rem .4rem;
+  border-radius: .25rem;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: .85rem;
+  line-height: 1.2;
+}
+
+/* Radios em linha única (4 por linha) em Medições */
+       .measurements-page .radio-group {
+         display: grid;
+         grid-template-columns: repeat(4, minmax(0, 1fr));
+         gap: .5rem 1rem;
+         justify-items: stretch;
+         align-items: stretch; /* itens com mesma altura na linha */
+         justify-content: start;
+       }
+       .measurements-page .radio-option {
+         display: flex;
+         align-items: center;
+         gap: .5rem;
+         justify-content: flex-start;
+         text-align: left;
+         width: 100%;
+         height: 100%; /* preencher toda a altura da célula */
+         white-space: normal; /* permitir quebra de texto para caber sem rolagem */
+       }
+       .measurements-page .radio-option input { margin: 0; }
+       .measurements-page .radio-option span {
+            font-size: 1rem;
+            line-height: 1.25;
+            display: -webkit-box;
+            -webkit-line-clamp: 3; /* padroniza para no máximo 3 linhas */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+          /* Radios em linha única (4 por linha) em Atividades */
+          .activities-page .form-group label { font-weight: 700; }
+          .activities-page .radio-group {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: .5rem 1rem;
+            justify-items: stretch;
+            align-items: stretch; /* itens com mesma altura na linha */
+            justify-content: start;
+          }
+          .activities-page .radio-option {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            justify-content: flex-start;
+            text-align: left;
+            width: 100%;
+            height: 100%; /* preencher toda a altura da célula */
+            white-space: normal; /* permitir quebra de texto para caber sem rolagem */
+          }
+          .activities-page .radio-option input { margin: 0; }
+          .activities-page .radio-option span {
+            font-size: 1rem;
+            line-height: 1.25;
+            display: -webkit-box;
+            -webkit-line-clamp: 3; /* padroniza para no máximo 3 linhas */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
