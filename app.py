@@ -812,6 +812,7 @@ def alerts():
                     alert_date_prev=alert_date,
                     alert_type_labels=ALERT_TYPE_LABELS,
                     day_labels=DAY_LABELS,
+                    alert_time_default="",
                 )
 
             days_str = ",".join(sorted(days_selected)) if has_days else ""
@@ -875,9 +876,10 @@ def alerts():
                     alerts=alerts_rows,
                     edit_alert=row,
                     edit_days=edit_days,
-                    edit_date=edit_alert["alert_date"] if edit_alert else None,
+                    edit_date=row["alert_date"],
                     alert_type_labels=ALERT_TYPE_LABELS,
                     day_labels=DAY_LABELS,
+                    alert_time_default="",
                 )
 
             days_str = ",".join(sorted(days_selected)) if has_days else ""
@@ -913,6 +915,7 @@ def alerts():
         edit_date=edit_alert["alert_date"] if edit_alert else None,
         alert_type_labels=ALERT_TYPE_LABELS,
         day_labels=DAY_LABELS,
+        alert_time_default="",
     )
 
 
@@ -1006,6 +1009,8 @@ def measurements():
                 context_prev=context,
                 notes_prev=notes,
                 measurement_contexts=MEASUREMENT_CONTEXTS,
+                date_default=datetime.now().strftime("%Y-%m-%d"),
+                time_default="",
             )
 
         conn = get_db_connection()
@@ -1031,7 +1036,7 @@ def measurements():
         measurement_contexts=MEASUREMENT_CONTEXTS,
         entries=entries,
         date_default=now.strftime("%Y-%m-%d"),
-        time_default=now.strftime("%H:%M"),
+        time_default="",
     )
 
 
@@ -1098,6 +1103,8 @@ def activities():
                 category_prev=category,
                 month_key=month_key,
                 category_labels=CATEGORY_LABELS,
+                date_default=datetime.now().strftime("%Y-%m-%d"),
+                time_default="",
             )
 
         conn = get_db_connection()
@@ -1134,7 +1141,7 @@ def activities():
         entries=entries,
         summary=summary,
         date_default=now.strftime("%Y-%m-%d"),
-        time_default=now.strftime("%H:%M"),
+        time_default="",
         month_key=month_key,
         category_labels=CATEGORY_LABELS,
     )
