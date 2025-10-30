@@ -1,6 +1,6 @@
 {
-  "name": "CuidaBem",
-  "short_name": "CuidaBem",
+  "name": "Imc-Check",
+  "short_name": "Imc-Check",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -9,7 +9,7 @@
   "description": "Controle de diabetes: medições, atividades, alertas e dashboards.",
   "icons": [
     {
-      "src": "/static/logo-cuidaBem.svg",
+      "src": "/static/logoimc.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

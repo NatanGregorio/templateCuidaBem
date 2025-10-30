@@ -1,9 +1,9 @@
-const CACHE_NAME = 'cuidabem-v1';
+const CACHE_NAME = 'Imc-Check';
 const ASSETS_TO_CACHE = [
   '/',
   '/features',
   '/static/styles.css',
-  '/static/logo-cuidaBem.svg',
+  '/static/logoimc.svg',
 ];
 
 self.addEventListener('install', (event) => {
