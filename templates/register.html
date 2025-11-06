@@ -31,34 +31,13 @@
       <div class="form-group">
         <label for="weight">Peso (kg)</label>
         <input type="number" id="weight" name="weight" step="0.1" min="1" placeholder="Ex: 65" value="{{ weight or '' }}">
+        <input type="date" name="birthdate" required class="p-2 bg-gray-800 rounded">
+  <select name="sex" class="p-2 bg-gray-800 rounded">
+    <option value="masculino">Masculino</option>
+    <option value="feminino">Feminino</option>
+  </select>>
       </div>
-      <div class="form-group">
-        <label for="diabetes_type">Tipo de diabetes</label>
-        <select id="diabetes_type" name="diabetes_type" required>
-          <option value="">Selecione...</option>
-          <option value="tipo_1" {% if diabetes_type == 'tipo_1' %}selected{% endif %}>Tipo 1</option>
-          <option value="tipo_2" {% if diabetes_type == 'tipo_2' %}selected{% endif %}>Tipo 2</option>
-          <option value="pre_diabetes" {% if diabetes_type == 'pre_diabetes' %}selected{% endif %}>Pré-diabetes</option>
-          <option value="gestacional" {% if diabetes_type == 'gestacional' %}selected{% endif %}>Gestacional</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="emergency_contact_name">Nome do responsável</label>
-        <input type="text" id="emergency_contact_name" name="emergency_contact_name" placeholder="Nome do responsável (opcional)" value="{{ emergency_contact_name or '' }}">
-      </div>
-      <div class="form-group">
-        <label for="emergency_contact_phone">Telefone do responsável</label>
-        <input type="tel" id="emergency_contact_phone" name="emergency_contact_phone" inputmode="tel" pattern="^\(\d{2}\)\s\d{4,5}-\d{4}$" title="Formato: (DD) 99999-9999" maxlength="15" placeholder="Ex: (11) 99999-0000 (opcional)" value="{{ emergency_contact_phone or '' }}">
-      </div>
-      <div class="form-group">
-        <label for="emergency_contact_relation">Relação com o responsável</label>
-        <select id="emergency_contact_relation" name="emergency_contact_relation">
-          <option value="">Selecione...</option>
-          <option value="pai" {% if emergency_contact_relation == 'pai' %}selected{% endif %}>Pai</option>
-          <option value="mae" {% if emergency_contact_relation == 'mae' %}selected{% endif %}>Mãe</option>
-          <option value="cuidador" {% if emergency_contact_relation == 'cuidador' %}selected{% endif %}>Cuidador</option>
-        </select>
-      </div>
+      
       <button type="submit" class="btn primary">Cadastrar</button>
     </form>
     <p class="muted">Já tem conta? <a href="{{ url_for('index') }}">Faça login</a>.</p>

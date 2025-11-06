@@ -11,7 +11,7 @@
 <body class="{% block body_class %}{% endblock %}">
   <header class="site-header">
     <div class="container header-wrap">
-      <h1 class="brand"><a href="{{ url_for('features') }}">CuidaBem</a></h1>
+      <h1 class="brand"><a href="{{ url_for('features') }}">Imc-check</a></h1>
       {% if session.get('user_id') %}
         <span class="welcome-msg">Bem-vindo(a), {{ session.get('user_name') }}</span>
       {% endif %}
