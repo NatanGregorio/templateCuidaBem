@@ -1,9 +1,108 @@
 from datetime import datetime
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
+from flask import jsonify
+from models import db, Usuario, Meta, RegistroIMC
+from datetime import datetime
+
+app = Flask(__name__)
+
+# Configuração do MySQL (ajuste seu usuário e senha)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root@localhost/imc_check'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "dev-secret-key"
 app.config["SESSION_COOKIE_HTTPONLY"] = True
+
+# Configuração da estrutura do Flask para renderizar páginas
+app = Flask(
+    __name__,
+   
+)
+
+
+# Configuração com o banco de dados
+app.config['SECRET_KEY'] = 'dev-secret-key'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
+    'DATABASE_URL',
+    'mysql+pymysql://root:root@localhost:3306/agendalab?charset=utf8mb4'
+)
+db = SQLAlchemy(app)
+
+#from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+
+db = SQLAlchemy()
+
+# -----------------------
+# TABELA DE USUÁRIOS
+# -----------------------
+class Usuario(db.Model):
+    __tablename__ = 'usuarios'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nome = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    telefone = db.Column(db.String(20))
+    login = db.Column(db.String(50), unique=True, nullable=False)
+    senha = db.Column(db.String(255), nullable=False)
+    altura = db.Column(db.Numeric(5, 2))
+    peso = db.Column(db.Numeric(5, 2))
+    data_nascimento = db.Column(db.Date)
+    sexo = db.Column(db.Enum('Masculino', 'Feminino', 'Outro'))
+    data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
+
+    metas = db.relationship('Meta', back_populates='usuario', cascade='all, delete')
+    registros_imc = db.relationship('RegistroIMC', back_populates='usuario', cascade='all, delete')
+
+    def __repr__(self):
+        return f'<Usuario {self.nome}>'
+
+# -----------------------
+# TABELA DE METAS
+# -----------------------
+class Meta(db.Model):
+    __tablename__ = 'metas'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    peso_desejado = db.Column(db.Numeric(5, 2), nullable=False)
+    data_meta = db.Column(db.Date, nullable=False)
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+
+    usuario = db.relationship('Usuario', back_populates='metas')
+
+    def __repr__(self):
+        return f'<Meta Usuario={self.usuario_id} PesoDesejado={self.peso_desejado}>'
+
+# -----------------------
+# TABELA DE REGISTROS DE IMC
+# -----------------------
+class RegistroIMC(db.Model):
+    __tablename__ = 'registros_imc'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    peso_atual = db.Column(db.Numeric(5, 2), nullable=False)
+    altura = db.Column(db.Numeric(5, 2), nullable=False)
+    imc = db.Column(db.Numeric(5, 2))
+    data_registro = db.Column(db.DateTime, default=datetime.utcnow)
+
+    usuario = db.relationship('Usuario', back_populates='registros_imc')
+
+    def calcular_imc(self):
+        """Calcula o IMC com base no peso e altura"""
+        if self.altura and self.peso_atual:
+            self.imc = round(float(self.peso_atual) / (float(self.altura) * float(self.altura)), 2)
+
+    def __repr__(self):
+        return f'<RegistroIMC Usuario={self.usuario_id} IMC={self.imc}>'
 
 # Constantes para os templates (mantidas para compatibilidade visual)
 ACTIVITY_CATEGORIES = [
@@ -144,6 +243,8 @@ def forgot_password():
             flash("Informe o login.", "error")
 
     return render_template("forgot_password.html")
+
+
 
 @app.route("/redefinir_senha", methods=["GET", "POST"])
 def reset_password():
@@ -409,3 +510,105 @@ def admin_db():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
+
+
+# Criação das tabelas
+with app.app_context():
+    db.create_all()
+
+
+# -----------------------
+# ROTAS USUÁRIO
+# -----------------------
+@app.route('/usuarios', methods=['POST'])
+def criar_usuario():
+    data = request.json
+    usuario = Usuario(
+        nome=data['nome'],
+        email=data['email'],
+        telefone=data.get('telefone'),
+        login=data['login'],
+        senha=data['senha'],
+        altura=data.get('altura'),
+        peso=data.get('peso'),
+        data_nascimento=datetime.strptime(data['data_nascimento'], '%Y-%m-%d'),
+        sexo=data.get('sexo')
+    )
+    db.session.add(usuario)
+    db.session.commit()
+    return jsonify({'mensagem': 'Usuário criado com sucesso!'}), 201
+
+
+@app.route('/usuarios', methods=['GET'])
+def listar_usuarios():
+    usuarios = Usuario.query.all()
+    return jsonify([{
+        'id': u.id,
+        'nome': u.nome,
+        'email': u.email,
+        'sexo': u.sexo,
+        'data_cadastro': u.data_cadastro
+    } for u in usuarios])
+
+
+# -----------------------
+# ROTAS META
+# -----------------------
+@app.route('/metas', methods=['POST'])
+def criar_meta():
+    data = request.json
+    meta = Meta(
+        usuario_id=data['usuario_id'],
+        peso_desejado=data['peso_desejado'],
+        data_meta=datetime.strptime(data['data_meta'], '%Y-%m-%d')
+    )
+    db.session.add(meta)
+    db.session.commit()
+    return jsonify({'mensagem': 'Meta criada com sucesso!'}), 201
+
+
+@app.route('/metas/<int:usuario_id>', methods=['GET'])
+def listar_metas_usuario(usuario_id):
+    metas = Meta.query.filter_by(usuario_id=usuario_id).all()
+    return jsonify([{
+        'id': m.id,
+        'peso_desejado': str(m.peso_desejado),
+        'data_meta': m.data_meta.strftime('%Y-%m-%d')
+    } for m in metas])
+
+
+# -----------------------
+# ROTAS REGISTRO DE IMC
+# -----------------------
+@app.route('/imc', methods=['POST'])
+def registrar_imc():
+    data = request.json
+    registro = RegistroIMC(
+        usuario_id=data['usuario_id'],
+        peso_atual=data['peso_atual'],
+        altura=data['altura']
+    )
+    registro.calcular_imc()
+    db.session.add(registro)
+    db.session.commit()
+    return jsonify({
+        'mensagem': 'Registro de IMC criado com sucesso!',
+        'imc': float(registro.imc)
+    }), 201
+
+
+@app.route('/imc/<int:usuario_id>', methods=['GET'])
+def listar_registros_imc(usuario_id):
+    registros = RegistroIMC.query.filter_by(usuario_id=usuario_id).all()
+    return jsonify([{
+        'id': r.id,
+        'peso_atual': float(r.peso_atual),
+        'altura': float(r.altura),
+        'imc': float(r.imc),
+        'data_registro': r.data_registro.strftime('%Y-%m-%d %H:%M')
+    } for r in registros])
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

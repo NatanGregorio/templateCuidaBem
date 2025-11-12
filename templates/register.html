@@ -24,22 +24,31 @@
         <label for="password">Senha</label>
         <input type="password" id="password" name="password" required placeholder="Crie uma senha">
       </div>
-      <div class="form-group">
-        <label for="height">Altura (cm)</label>
-        <input type="number" id="height" name="height" step="0.1" min="1" placeholder="Ex: 170" value="{{ height or '' }}">
-      </div>
-      <div class="form-group">
-        <label for="weight">Peso (kg)</label>
-        <input type="number" id="weight" name="weight" step="0.1" min="1" placeholder="Ex: 65" value="{{ weight or '' }}">
-        <input type="date" name="birthdate" required class="p-2 bg-gray-800 rounded">
-  <select name="sex" class="p-2 bg-gray-800 rounded">
+      <!-- Novos campos -->
+<div class="form-group">
+  <label>Data de Nascimento</label>
+  <input type="date" name="birthdate" required>
+</div>
+
+<div class="form-group">
+  <label>Sexo</label>
+  <select name="sex" required>
     <option value="masculino">Masculino</option>
     <option value="feminino">Feminino</option>
-  </select>>
-      </div>
-      
-      <button type="submit" class="btn primary">Cadastrar</button>
-    </form>
-    <p class="muted">Já tem conta? <a href="{{ url_for('index') }}">Faça login</a>.</p>
-  </section>
+  </select>
+</div>
+
+<div class="form-group">
+  <label>Altura (cm)</label>
+  <input type="number" name="height" step="0.1" required>
+</div>
+
+<div class="form-group">
+  <label>Peso (kg)</label>
+  <input type="number" name="weight" step="0.1" required>
+</div>
+<button type="submit" class="btn primary">Cadastrar</button>
+</form>
+<p class="muted">Já tem conta? <a href="{{ url_for('index') }}">Faça login</a>.</p>
+</section>
 {% endblock %}
